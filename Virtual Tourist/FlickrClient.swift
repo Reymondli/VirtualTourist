@@ -11,7 +11,7 @@ import CoreData
 
 class FlickrClient: NSObject {
     // MARK: Property
-    let session = URLSession.shared
+    var session = URLSession.shared
     
     // MARK: Shared Instance
     static var sharedInstance = FlickrClient()
@@ -19,14 +19,19 @@ class FlickrClient: NSObject {
     // MARK: CoreDataStack
     var stack = CoreDataStack(modelName: "Model")!
     
+    // MARK: Initializers
+    override init() {
+        super.init()
+    }
+    
     // MARK: Get Total Pages of Photos from Target Location (Based on Geocode)
-    func getPagesFromLatLon(latitude: String, longitude: String, completionHandlerForGetPages: @escaping (_ imageFound: Bool?, _ error: String?)-> Void) {
-        
+    func getPagesFromLatLon(latitude: Double, longitude: Double, completionHandlerForGetPages: @escaping (_ imageFound: Bool?, _ error: String?)-> Void) {
+        print("Getting Pages From LatLon")
         // MARK: Set the Parameters
         let parameters = [
             Constants.FlickrParameterKeys.Method: Constants.FlickrParameterValues.SearchMethod,
             Constants.FlickrParameterKeys.APIKey: Constants.FlickrParameterValues.APIKey,
-            Constants.FlickrParameterKeys.BoundingBox: bboxString(lat: latitude, lon: longitude),
+            Constants.FlickrParameterKeys.BoundingBox: bboxString(latitude: latitude, longitude: longitude),
             Constants.FlickrParameterKeys.SafeSearch: Constants.FlickrParameterValues.UseSafeSearch,
             Constants.FlickrParameterKeys.Extras: Constants.FlickrParameterValues.MediumURL,
             Constants.FlickrParameterKeys.Format: Constants.FlickrParameterValues.ResponseFormat,
@@ -68,6 +73,7 @@ class FlickrClient: NSObject {
                 completionHandlerForGetPages(false, nil)
             } else {
                 let randomPage = self.getRandomPage(totalPages)
+                print("Getting Pages From Random Page!")
                 self.getImageUrl(latitude: latitude, longitude: longitude, withPageNumber: randomPage, methodParameters: parameters as [String : AnyObject], completionHandlerForGetImageUrl: completionHandlerForGetPages)
             }
             
@@ -83,7 +89,7 @@ class FlickrClient: NSObject {
     }
     
     // MARK: Get Image URL from Target Location (Based on Geocode) and Target Page Number (Based on Random Page)
-    func getImageUrl(latitude: String, longitude: String, withPageNumber: Int, methodParameters: [String: AnyObject], completionHandlerForGetImageUrl: @escaping (_ imageFound: Bool?, _ error: String?)-> Void){
+    func getImageUrl(latitude: Double, longitude: Double, withPageNumber: Int, methodParameters: [String: AnyObject], completionHandlerForGetImageUrl: @escaping (_ imageFound: Bool?, _ error: String?)-> Void){
         // MARK: Set the Parameters
         var parametersWithPage = methodParameters
         parametersWithPage[Constants.FlickrParameterKeys.Page] = withPageNumber as AnyObject?
@@ -94,7 +100,7 @@ class FlickrClient: NSObject {
                 completionHandlerForGetImageUrl(false, error)
                 return
             }
-            
+            print("Im Here!!! Im Here!!!!")
             guard let parsedResult = result else {
                 completionHandlerForGetImageUrl(false, "Failed to Get Data From Flickr")
                 return
@@ -115,9 +121,10 @@ class FlickrClient: NSObject {
             if photosArray.count == 0 {
                 completionHandlerForGetImageUrl(false, nil)
             } else {
-                
+                print("photosArray count is: \(photosArray.count)")
                 // MARK: Batch Process, Batch = workerContext
-                self.stack.performBackgroundBatchOperation{ (Batch) in
+                self.stack.performBackgroundBatchOperation { (Batch) in
+                    
                     let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
                     let predicate = NSPredicate(format: "latitude = %@ && longitude = %@", argumentArray: [latitude, longitude])
                     fetchRequest.predicate = predicate
@@ -126,6 +133,7 @@ class FlickrClient: NSObject {
                     
                     if let pins = try? Batch.fetch(fetchRequest) as! [Pin] {
                         if let pin = pins.first {
+                            print("Like I Told You From the Beginning.....")
                             for photoDictionary in photosArray {
                                 
                                 // Create photo objects for each image in the flickr result
@@ -137,11 +145,13 @@ class FlickrClient: NSObject {
                                 }
                                 let photo = Photo(imageData: nil, imageUrl: imageURLString, context: Batch)
                                 photo.pin = pin
-                                completionHandlerForGetImageUrl(true, nil)
+                                // print(imageURLString)
+                                
                             }
                         }
                     }
                 }
+                completionHandlerForGetImageUrl(true, nil)
             }
         }
     }
@@ -155,7 +165,8 @@ class FlickrClient: NSObject {
             
             if error == nil {
                 print("getImageFromUrl - Success")
-                completionHandlerForGetImage(data, nil)
+                let imageData = NSData(data: data!) as Data
+                completionHandlerForGetImage(imageData, nil)
             } else {
                 print("getImageFromUrl - Error")
                 completionHandlerForGetImage(nil, error)

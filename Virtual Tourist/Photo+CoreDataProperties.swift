@@ -2,7 +2,7 @@
 //  Photo+CoreDataProperties.swift
 //  Virtual Tourist
 //
-//  Created by ziming li on 2017-07-30.
+//  Created by ziming li on 2017-08-05.
 //  Copyright © 2017 ziming li. All rights reserved.
 //
 

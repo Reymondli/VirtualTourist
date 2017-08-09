@@ -71,6 +71,7 @@ class TravelLocationViewController: UIViewController {
             }
             // Add Annotation to Map
             mapView.addAnnotation(annotation)
+            print("Pin Created!")
         }
     }
 }
@@ -88,7 +89,7 @@ extension TravelLocationViewController: MKMapViewDelegate {
         } else {
             pinView!.annotation = annotation
         }
-        
+        print("pinView Returned!")
         return pinView
     }
     
@@ -107,8 +108,8 @@ extension TravelLocationViewController: MKMapViewDelegate {
         // Get Geocode Info of Selected Pin
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
         let coordinate = annotation.coordinate
-        let predicate = NSPredicate(format: "latitude > %lf AND latitude < %lf AND longitude > %lf AND longitude < %lf", coordinate.latitude - 0.01, coordinate.latitude + 0.01, coordinate.longitude - 0.01, coordinate.longitude + 0.01)
-        fetchRequest.predicate = predicate
+        let fpredicate = NSPredicate(format: "latitude > %lf AND latitude < %lf AND longitude > %lf AND longitude < %lf", coordinate.latitude - 0.01, coordinate.latitude + 0.01, coordinate.longitude - 0.01, coordinate.longitude + 0.01)
+        fetchRequest.predicate = fpredicate
         
         if let pins = try? stack.context.fetch(fetchRequest) as! [NSManagedObject] {
             if let pin = pins.first {
@@ -132,7 +133,6 @@ extension TravelLocationViewController: MKMapViewDelegate {
             }
         }
     }
-    
 }
 
 // Modify the Structure that defines which portion of the map to display.

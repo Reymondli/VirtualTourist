@@ -21,7 +21,12 @@ class PhotoAlbumController: UIViewController {
     
     // MARK: Properties
     var targetPin: Pin!
-    var stack = CoreDataStack(modelName: "Model")!
+    // var stack = CoreDataStack(modelName: "Model")!
+    
+    var stack: CoreDataStack {
+        let delegate = UIApplication.shared.delegate as! AppDelegate
+        return delegate.stack
+    }
     
     // MARK: Index Path List For Each Operation
     var selectIndex = [IndexPath]()
@@ -65,16 +70,40 @@ class PhotoAlbumController: UIViewController {
     // MARK: Life Cycles
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Hide "No Image" Label By Default
-        noImageLabel.isHidden = true
-        deleteMode = false
         
         // Display MapView Based on Pin Location
         displayPinOnMap(selectedPin: targetPin)
         
-        // Load Photos to Each Cell
-        // loadPhotos()
+        // Load Photos from CoreData to Each Cell
+        setFetchRequest()
         
+        // Hide "No Image" Label By Default
+        noImageLabel.isHidden = true
+        deleteMode = false
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setCellSize()
+        // check if coredata has photos
+        if targetPin.photo!.count > 0 {
+            // no need to fetch fresh new photos
+            print("photos from core data \(targetPin.photo!.count)")
+        }
+        else {
+            // else fetch it from flickr
+            loadPhotos()
+        }
+    }
+    
+    func setCellSize() {
+        let space: CGFloat = 3.0
+        let dimension = (view.frame.size.width - (2 * space)) / 3.0
+        let dimension2 = (view.frame.size.height - (2 * space)) / 6.0
+        
+        flowLayout.minimumInteritemSpacing = space
+        flowLayout.minimumLineSpacing = space
+        flowLayout.itemSize = CGSize(width: dimension, height: dimension2)
     }
     
     // MARK: Display Selected Pin Location on Map View, almost same as the preview method on OnTheMap
@@ -89,17 +118,21 @@ class PhotoAlbumController: UIViewController {
         mapView.setRegion(region, animated: true)
     }
     
-    // MARK: Load Photos From Flickr to Each Cell
+    // MARK: Load Photos From Flickr Based on Geo-code
     func loadPhotos() {
         print("Searching Photos From Flickr")
         newCollection.isEnabled = false
-        FlickrClient.sharedInstance.getPagesFromLatLon(latitude: String(targetPin.latitude), longitude: String(targetPin.longitude)) { (imageFound, error) in
+        FlickrClient.sharedInstance.getPagesFromLatLon(latitude: targetPin.latitude, longitude: targetPin.longitude) { (imageFound, error) in
             guard error == nil else {
                 print("Error Found During Flickr Image Search Processing: \(error!)")
                 return
             }
-            self.noImageLabel.isHidden = imageFound!
+            if imageFound! {
+                self.noImageLabel.isHidden = true
+            }
+            
         }
+        print("Finish Loading")
     }
     
     // MARK: Activity Indicator Configuration
@@ -120,6 +153,15 @@ class PhotoAlbumController: UIViewController {
     @IBAction func bottomButtonPressed(_ sender: Any) {
         if deleteMode {
             // Delete Photos and Update Core Data
+            if let context = fetchedResultsController?.managedObjectContext, selectIndex.count > 0 {
+                
+                for index in selectIndex {
+                    let selectPhoto = fetchedResultsController!.object(at: index) as! Photo
+                    context.delete(selectPhoto)
+                }
+                // Once Deletion Complete, Change the title back to ""
+                newCollection.setTitle("New Collection", for: .normal)
+            }
             
         } else {
             // Disable Button While Searching for Images
@@ -131,7 +173,7 @@ class PhotoAlbumController: UIViewController {
                 for photo in fetchedResultsController!.fetchedObjects as! [Photo] {
                     context.delete(photo)
                 }
-                stack.save()
+                self.stack.save()
             }
             
             // Search For New Photos From Flickr
@@ -139,75 +181,44 @@ class PhotoAlbumController: UIViewController {
         }
         
         // Save Changes into Core Data
-        stack.save()
+        self.stack.save()
+    }
+    
+    
+    func setFetchRequest() {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+        
+        // MARK: An NSSortDescriptor object describes a basis for ordering objects
+        let descriptor = [NSSortDescriptor(key: "imageUrl", ascending: true)]
+        fetchRequest.sortDescriptors = descriptor
+        
+        let ffpredicate = NSPredicate(format: "targetPin = %@", argumentArray: [targetPin!])
+        fetchRequest.predicate = ffpredicate
+        
+        // MARK:  use a fetched results controller to efficiently manage the results returned from a Core Data fetch request to provide data for a UITableView object.
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: stack.context, sectionNameKeyPath: nil, cacheName: nil)
     }
     
     
 }
-
-// MARK: PhotoAlbumController: UICollectionViewDataSource
-// collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) and
-// collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath)
-// Must be declared for controller to conform to UICollectionViewDataSource
-extension PhotoAlbumController: UICollectionViewDataSource {
-    
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        let sectionCount = self.fetchedResultsController?.sections?.count ?? 0
-        return sectionCount
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        //
-        let section = self.fetchedResultsController?.sections![section]
-        print(section!.numberOfObjects)
-        return section!.numberOfObjects
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionCellController
-        
-        // Set FRC
-        let photo = fetchedResultsController?.object(at: indexPath) as! Photo
-        cell.photoImage.image = nil
-        configActivityIndicator(activityIndicator: cell.activityIndicator, turnOn: true)
-        print(photo.imageUrl!)
-        
-        // Load Image on Each Cell
-        if let cellImageData = photo.imageData {
-            // Get Saved Image Directly
-            cell.photoImage.image = UIImage(data: cellImageData as Data)
-            newCollection.isEnabled = true
-        } else {
-            // If No Saved Image Loaded Before, Get Image From URL and Save it
-            if let cellImageUrl = photo.imageUrl {
-                FlickrClient.sharedInstance.getImageFromUrl(cellImageUrl) { (imageData, error) in
-                    guard error == nil else {
-                        print("Error Appears when Getting Image Using URL")
-                        return
-                    }
-                    // Dealing with UI on Main Queue
-                    DispatchQueue.main.async {
-                        cell.photoImage.image = UIImage(data: imageData!)
-                        self.configActivityIndicator(activityIndicator: cell.activityIndicator, turnOn: false)
-                        
-                        // Save All Loaded Photos into Core Data
-                        photo.imageData = imageData! as NSData
-                        self.stack.save()
-                        // Re-enable "New Collection" Button
-                        self.newCollection.isEnabled = true
-                    }
-                }
+extension PhotoAlbumController {
+    func executeSearch() {
+        if let fc = fetchedResultsController {
+            do {
+                try fc.performFetch()
+            } catch let e as NSError {
+                print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController!)")
             }
         }
-        
-        return cell
     }
-}
 
+}
 // MARK: PhotoAlbumController: UICollectionViewDelegate
 extension PhotoAlbumController: UICollectionViewDelegate {
     
+    // MARK: collectionView - didSelectItemAt
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("Accessing collectionView - didSelectItemAt")
         let cell = collectionView.cellForItem(at: indexPath) as! PhotoCollectionCellController
         
         // Check whether the target cell/Photo has been selected for the first time or second time
@@ -226,21 +237,76 @@ extension PhotoAlbumController: UICollectionViewDelegate {
         }
         
         // If selectIndex count is more than 0, Enable Delete Mode
-        deleteMode = (selectIndex.count > 0)
+        deleteMode = selectIndex.count > 0 ? true : false
+        print("Finishing collectionView - didSelectItemAt")
     }
 }
 
-extension PhotoAlbumController {
-    func executeSearch() {
-        if let fc = fetchedResultsController {
-            do {
-                try fc.performFetch()
-            } catch let e as NSError {
-                print("Error while trying to perform a search: \n\(e)\n\(fetchedResultsController!)")
+// MARK: PhotoAlbumController: UICollectionViewDataSource
+// collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) and
+// collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath)
+// Must be declared for controller to conform to UICollectionViewDataSource
+extension PhotoAlbumController: UICollectionViewDataSource {
+    
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        let sections = self.fetchedResultsController?.sections?.count ?? 0
+        print("Returning Sections: \(sections)")
+        return sections
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        //
+        let sectionInfo = self.fetchedResultsController?.sections![section]
+        print("Returning Section.numberOfObjects: \(sectionInfo!.numberOfObjects)")
+        return sectionInfo!.numberOfObjects
+    }
+    
+    // MARK: collectionView - cellForItemAt
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        print("Accessing collectionView - cellForItemAt Method")
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photocell", for: indexPath) as! PhotoCollectionCellController
+        // Set FRC
+        let photo = fetchedResultsController?.object(at: indexPath) as! Photo
+        cell.photoImage.image = nil
+        print("Activity Indicator Starting...")
+        configActivityIndicator(activityIndicator: cell.activityIndicator, turnOn: true)
+        print(photo.imageUrl!)
+        
+        // Load Image on Each Cell
+        if let cellImageData = photo.imageData {
+            // Get Saved Image Directly
+            print("Im in collectionView function!!!!!")
+            cell.photoImage.image = UIImage(data: cellImageData as Data)
+            newCollection.isEnabled = true
+        } else {
+            print("Im in collectionView function!!!!!")
+            // If No Saved Image Loaded Before, Get Image From URL and Save it
+            if let cellImageUrl = photo.imageUrl {
+                FlickrClient.sharedInstance.getImageFromUrl(cellImageUrl) { (imageData, error) in
+                    guard error == nil else {
+                        print("Error Appears when Getting Image Using URL")
+                        return
+                    }
+                    // Dealing with UI on Main Queue
+                    DispatchQueue.main.async {
+                        cell.photoImage.image = UIImage(data: imageData!)
+                        self.configActivityIndicator(activityIndicator: cell.activityIndicator, turnOn: false)
+                        print("Activity Indicator Stoping...")
+                        
+                        // Save All Loaded Photos into Core Data
+                        photo.imageData = imageData! as NSData
+                        self.stack.save()
+                        // Re-enable "New Collection" Button
+                        self.newCollection.isEnabled = true
+                    }
+                }
             }
         }
+        print("Finishing collectionView - cellForItemAt Method")
+        return cell
     }
 }
+
 
 // MARK: PhotoAlbumController: NSFetchedResultsControllerDelegate
 extension PhotoAlbumController: NSFetchedResultsControllerDelegate {

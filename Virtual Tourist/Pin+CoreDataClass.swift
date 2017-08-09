@@ -2,7 +2,7 @@
 //  Pin+CoreDataClass.swift
 //  Virtual Tourist
 //
-//  Created by ziming li on 2017-07-30.
+//  Created by ziming li on 2017-08-05.
 //  Copyright © 2017 ziming li. All rights reserved.
 //
 
@@ -12,6 +12,7 @@ import MapKit
 
 @objc(Pin)
 public class Pin: NSManagedObject {
+    
     // MARK: Initializer
     convenience init(latitude: Double, longitude: Double, context: NSManagedObjectContext) {
         // An EntityDescription is an object that has access to all
@@ -21,6 +22,7 @@ public class Pin: NSManagedObject {
             self.init(entity: ent, insertInto: context)
             self.latitude = latitude
             self.longitude = longitude
+            print("Pin with lat \(latitude, longitude) is created ")
         } else {
             fatalError("Unable to find Entity name!")
         }
@@ -28,8 +30,10 @@ public class Pin: NSManagedObject {
     
     // MARK: Create Annotation Object
     func createAnnotation() -> MKAnnotation {
+        print("Creating Annotation")
         let annotation = MKPointAnnotation()
         annotation.coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         return annotation
     }
+
 }
