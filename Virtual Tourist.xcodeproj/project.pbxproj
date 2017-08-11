@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		723AD5461F32CB7F0007D712 /* PhotoAlbumController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723AD5451F32CB7F0007D712 /* PhotoAlbumController.swift */; };
-		723AD5481F33B29D0007D712 /* PhotoCollectionCellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723AD5471F33B29D0007D712 /* PhotoCollectionCellController.swift */; };
 		723AD54E1F36AC350007D712 /* Photo+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723AD54A1F36AC350007D712 /* Photo+CoreDataClass.swift */; };
 		723AD54F1F36AC350007D712 /* Photo+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723AD54B1F36AC350007D712 /* Photo+CoreDataProperties.swift */; };
 		723AD5501F36AC350007D712 /* Pin+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723AD54C1F36AC350007D712 /* Pin+CoreDataClass.swift */; };
 		723AD5511F36AC350007D712 /* Pin+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723AD54D1F36AC350007D712 /* Pin+CoreDataProperties.swift */; };
 		723AD5581F380BCB0007D712 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 723AD5561F380BCB0007D712 /* Assets.xcassets */; };
 		723AD55B1F381E020007D712 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 723AD55A1F381E020007D712 /* MapKit.framework */; };
+		723AD5601F3B89700007D712 /* PhotoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723AD55F1F3B89700007D712 /* PhotoCollectionViewController.swift */; };
+		723AD5621F3B89FB0007D712 /* PhotoCollectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723AD5611F3B89FB0007D712 /* PhotoCollectionCell.swift */; };
 		727F84451F28EFEE004F196A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727F84441F28EFEE004F196A /* AppDelegate.swift */; };
 		727F84471F28EFEE004F196A /* TravelLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727F84461F28EFEE004F196A /* TravelLocationViewController.swift */; };
 		727F844A1F28EFEE004F196A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 727F84481F28EFEE004F196A /* Main.storyboard */; };
@@ -46,14 +46,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		723AD5451F32CB7F0007D712 /* PhotoAlbumController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoAlbumController.swift; sourceTree = "<group>"; };
-		723AD5471F33B29D0007D712 /* PhotoCollectionCellController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCollectionCellController.swift; sourceTree = "<group>"; };
 		723AD54A1F36AC350007D712 /* Photo+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Photo+CoreDataClass.swift"; sourceTree = "<group>"; };
 		723AD54B1F36AC350007D712 /* Photo+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Photo+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		723AD54C1F36AC350007D712 /* Pin+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Pin+CoreDataClass.swift"; sourceTree = "<group>"; };
 		723AD54D1F36AC350007D712 /* Pin+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Pin+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		723AD5571F380BCB0007D712 /* Base */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Base; path = Base.lproj/Assets.xcassets; sourceTree = "<group>"; };
 		723AD55A1F381E020007D712 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		723AD55F1F3B89700007D712 /* PhotoCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCollectionViewController.swift; sourceTree = "<group>"; };
+		723AD5611F3B89FB0007D712 /* PhotoCollectionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCollectionCell.swift; sourceTree = "<group>"; };
 		727F84411F28EFEE004F196A /* Virtual Tourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Virtual Tourist.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		727F84441F28EFEE004F196A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		727F84461F28EFEE004F196A /* TravelLocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelLocationViewController.swift; sourceTree = "<group>"; };
@@ -164,8 +164,8 @@
 			isa = PBXGroup;
 			children = (
 				727F84461F28EFEE004F196A /* TravelLocationViewController.swift */,
-				723AD5451F32CB7F0007D712 /* PhotoAlbumController.swift */,
-				723AD5471F33B29D0007D712 /* PhotoCollectionCellController.swift */,
+				723AD55F1F3B89700007D712 /* PhotoCollectionViewController.swift */,
+				723AD5611F3B89FB0007D712 /* PhotoCollectionCell.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -342,15 +342,15 @@
 				723AD54E1F36AC350007D712 /* Photo+CoreDataClass.swift in Sources */,
 				727F847B1F292168004F196A /* Constants.swift in Sources */,
 				727F84471F28EFEE004F196A /* TravelLocationViewController.swift in Sources */,
-				723AD5461F32CB7F0007D712 /* PhotoAlbumController.swift in Sources */,
 				727F84451F28EFEE004F196A /* AppDelegate.swift in Sources */,
 				727F847D1F298341004F196A /* FlickrConvenience.swift in Sources */,
+				723AD5621F3B89FB0007D712 /* PhotoCollectionCell.swift in Sources */,
 				727F84791F292159004F196A /* FlickrClient.swift in Sources */,
 				7283EA411F2AD822000FBB86 /* Model.xcdatamodeld in Sources */,
+				723AD5601F3B89700007D712 /* PhotoCollectionViewController.swift in Sources */,
 				723AD54F1F36AC350007D712 /* Photo+CoreDataProperties.swift in Sources */,
 				723AD5501F36AC350007D712 /* Pin+CoreDataClass.swift in Sources */,
 				723AD5511F36AC350007D712 /* Pin+CoreDataProperties.swift in Sources */,
-				723AD5481F33B29D0007D712 /* PhotoCollectionCellController.swift in Sources */,
 				7283EA4B1F2ADD85000FBB86 /* CoreDateStack.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

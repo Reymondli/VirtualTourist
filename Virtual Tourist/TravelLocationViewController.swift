@@ -17,7 +17,10 @@ class TravelLocationViewController: UIViewController {
     @IBOutlet weak var deleteLabel: UILabel!
     
     // MARK: Property
-    var stack = CoreDataStack(modelName: "Model")!
+    var stack: CoreDataStack {
+        let delegate = UIApplication.shared.delegate as! AppDelegate
+        return delegate.stack
+    }
     
     var editPressed = false
     
@@ -108,8 +111,8 @@ extension TravelLocationViewController: MKMapViewDelegate {
         // Get Geocode Info of Selected Pin
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
         let coordinate = annotation.coordinate
-        let fpredicate = NSPredicate(format: "latitude > %lf AND latitude < %lf AND longitude > %lf AND longitude < %lf", coordinate.latitude - 0.01, coordinate.latitude + 0.01, coordinate.longitude - 0.01, coordinate.longitude + 0.01)
-        fetchRequest.predicate = fpredicate
+        let predicate = NSPredicate(format: "latitude > %lf AND latitude < %lf AND longitude > %lf AND longitude < %lf", coordinate.latitude - 0.01, coordinate.latitude + 0.01, coordinate.longitude - 0.01, coordinate.longitude + 0.01)
+        fetchRequest.predicate = predicate
         
         if let pins = try? stack.context.fetch(fetchRequest) as! [NSManagedObject] {
             if let pin = pins.first {
@@ -125,9 +128,9 @@ extension TravelLocationViewController: MKMapViewDelegate {
                 } else {
                     print("Tap on Pin for Photos")
                     // Pin Selected - Tap on Pin to Open Photo Album Controller
-                    let albumController = storyboard?.instantiateViewController(withIdentifier: "photoAlbumController") as! PhotoAlbumController
+                    let albumController = storyboard?.instantiateViewController(withIdentifier: "photoAlbum") as! PhotoCollectionViewController
                     // Pass Target Pin to Photo Album Controller
-                    albumController.targetPin = pin as? Pin
+                    albumController.pin = pin as? Pin
                     navigationController?.pushViewController(albumController, animated: true)
                 }
             }

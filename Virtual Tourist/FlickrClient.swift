@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import UIKit
 
 class FlickrClient: NSObject {
     // MARK: Property
@@ -17,7 +18,10 @@ class FlickrClient: NSObject {
     static var sharedInstance = FlickrClient()
     
     // MARK: CoreDataStack
-    var stack = CoreDataStack(modelName: "Model")!
+    var stack: CoreDataStack {
+        let delegate = UIApplication.shared.delegate as! AppDelegate
+        return delegate.stack
+    }
     
     // MARK: Initializers
     override init() {
@@ -164,7 +168,6 @@ class FlickrClient: NSObject {
         let task = session.dataTask(with: request){(data, response, error) in
             
             if error == nil {
-                print("getImageFromUrl - Success")
                 let imageData = NSData(data: data!) as Data
                 completionHandlerForGetImage(imageData, nil)
             } else {
@@ -172,7 +175,6 @@ class FlickrClient: NSObject {
                 completionHandlerForGetImage(nil, error)
             }
         }
-        
         task.resume()
     }
     
